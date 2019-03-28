@@ -1,5 +1,5 @@
-from functools import wraps
 import flask
+from functools import wraps
 import json
 import jwt
 
@@ -28,7 +28,9 @@ def get_realm(f):
 
 
 def require_role(*allowed_roles):
-    allowed_roles = allowed_roles[0]  # Allowed roles is a tuple wrapping a list
+    # Allowed roles is a tuple wrapping a list
+    allowed_roles = allowed_roles[0]
+
     def wrapper(f):
         @wraps(f)
         def wrapped(*args, **kwargs):

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Copyright (C) 2018 by eHealth Africa : http://www.eHealthAfrica.org
 #
@@ -20,17 +20,38 @@
 #
 set -Eeuo pipefail
 
-show_help () {
+function show_help {
     echo """
     Commands
     ----------------------------------------------------------------------------
-    bash                                : run bash
-    eval                                : eval shell command
+    bash             : run bash
+    eval             : eval shell command
 
-    make_realm                          : create realms from the artifacts in /code/realm
-    setup_auth                          : register keycloak and in Kong.
-    register_service {realm} {service}  : register aether app/realm in Kong.
+    setup_auth       : register Keycloak & Minio in Kong.
 
+    add_service      : adds a service to an existing realm in Kong,
+                       using the service definition in /service directory.
+
+                       usage: add_service {service} {realm}
+
+    remove_service   : removes a service from an existing realm in Kong,
+                       using the service definition in /service directory.
+
+                       usage: remove_service {service} {realm}
+
+    add_solution     : adds a package of services to an existing realm in Kong,
+                       using the solution definition in /solution directory.
+
+                       usage: add_solution {solution} {realm}
+
+    remove_solution  : removes a package of services from an existing realm in Kong,
+                       using the solution definition in /solution directory.
+
+                       usage: remove_solution {solution} {realm}
+
+    decode_token     : decodes a JSON Web Token (JWT)
+
+                       usage: decode_token {token}
     """
 }
 
@@ -43,21 +64,28 @@ case "$1" in
         eval "${@:2}"
     ;;
 
-    make_realm )
-        # setups realms from those available in /realm folder
-        python /code/src/make_realm.py
-    ;;
-
     setup_auth )
-        # add keycloak to Kong
-        python /code/src/register_keycloak.py keycloak    ${KEYCLOAK_INTERNAL}
+        python /code/src/setup_auth.py
     ;;
 
-    register_service )
-        # adds a service to an existing realm, using the service definition
-        # in /service
-        # usage: register_service {realm} {service}
-        python /code/src/register_service.py "${@:2}"
+    add_service )
+        python /code/src/manage_service.py ADD SERVICE "${@:2}"
+    ;;
+
+    remove_service )
+        python /code/src/manage_service.py REMOVE SERVICE "${@:2}"
+    ;;
+
+    add_solution )
+        python /code/src/manage_service.py ADD SOLUTION "${@:2}"
+    ;;
+
+    remove_solution )
+        python /code/src/manage_service.py REMOVE SOLUTION "${@:2}"
+    ;;
+
+    decode_token )
+        python /code/src/decode_token.py "${@:2}"
     ;;
 
     help )

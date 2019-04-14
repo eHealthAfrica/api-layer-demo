@@ -23,27 +23,28 @@ def get_env(name):
     return os.environ.get(name)
 
 
-HOST = get_env('BASE_HOST')  # External URL for host
-APP_NAME = get_env('APP_NAME')
-APP_PORT = get_env('APP_PORT')
+DEBUG = bool(get_env('DEBUG'))
 
+HOST = get_env('BASE_HOST')  # External URL for host
+DOMAIN = get_env('BASE_DOMAIN')
 
 # Keycloak Information
 KEYCLOAK_INTERNAL = get_env('KEYCLOAK_INTERNAL')
-KEYCLOAK_URL = f'{HOST}/keycloak/auth/'
 
 KC_URL = f'{KEYCLOAK_INTERNAL}/keycloak/auth/'  # internal
 KC_ADMIN_USER = get_env('KEYCLOAK_GLOBAL_ADMIN')
 KC_ADMIN_PASSWORD = get_env('KEYCLOAK_GLOBAL_PASSWORD')
 KC_MASTER_REALM = 'master'
+KEYCLOAK_KONG_CLIENT = get_env('KEYCLOAK_KONG_CLIENT')
 
 
 # Kong Information
-KONG_URL = f'{get_env("KONG_INTERNAL")}/'
-CONSUMERS_URL = f'{KONG_URL}consumers'
-
+KONG_URL = get_env('KONG_INTERNAL')
+KONG_OIDC_PLUGIN = 'kong-oidc-auth'
 
 REALMS_PATH = '/code/realm'
 SERVICES_PATH = '/code/service'
-JWT_COOKIE = get_env('JWT_COOKIE') or 'aether-jwt'
-REALM_COOKIE = get_env('REALM_COOKIE') or 'aether-realm'
+SOLUTIONS_PATH = '/code/solution'
+
+# Minio
+MINIO_INTERNAL = get_env('MINIO_INTERNAL')

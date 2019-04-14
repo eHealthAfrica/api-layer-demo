@@ -18,64 +18,54 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import os
-import requests
-import sys
-
-from settings import HOST, KONG_URL
-
-
-def __post(url, data):
-    res = requests.post(url, data=data)
-    try:
-        res.raise_for_status()
-        return res.json()
-    except Exception as e:
-        print(res.status_code)
-        print(res.json())
-        raise e
+from helpers import request
+from settings import HOST, KONG_URL, KEYCLOAK_INTERNAL, MINIO_INTERNAL
 
 
 def register_app(name, url):
     # Register Client with Kong
     # Single API Service
     data = {
-        'name': f'{name}',
-        'url': f'{url}',
+        'name': name,
+        'url': url,
     }
-    client_info = __post(url=f'{KONG_URL}services/', data=data)
+    client_info = request(method='post', url=f'{KONG_URL}/services/', data=data)
     client_id = client_info['id']
 
     # ADD CORS Plugin to Kong for whole domain CORS
-    PLUGIN_URL = f'{KONG_URL}services/{name}/plugins'
-    data = {
+    PLUGIN_URL = f'{KONG_URL}/services/{name}/plugins'
+    data_cors = {
         'name': 'cors',
-        'config.origins': f'{HOST}/*',
-        'config.methods': ['HEAD', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-        'config.headers': 'Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, Authorization',
-        'config.exposed_headers': 'Authorization',
-        'config.max_age': 3600,
         'config.credentials': 'true',
+        'config.exposed_headers': 'Authorization',
+        'config.headers': 'Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, Authorization',
+        'config.max_age': 3600,
+        'config.methods': ['HEAD', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+        'config.origins': f'{HOST}/*',
     }
-    __post(url=PLUGIN_URL, data=data)
+    request(method='post', url=PLUGIN_URL, data=data_cors)
 
     # Routes
     # Add a route which we will NOT protect
-    ROUTE_URL = f'{KONG_URL}services/{name}/routes'
-    data = {
+    ROUTE_URL = f'{KONG_URL}/services/{name}/routes'
+    data_route = {
         'paths' : [f'/{name}'],
         'strip_path': 'false',
         'preserve_host': 'false',  # This is keycloak specific.
     }
-    __post(url=ROUTE_URL, data=data)
+    request(method='post', url=ROUTE_URL, data=data_route)
 
     return client_id
 
 
 if __name__ == '__main__':
-    CLIENT_NAME = sys.argv[1]
-    CLIENT_URL = sys.argv[2]
+    # add keycloak and minio
+    services = [
+        ('keycloak', KEYCLOAK_INTERNAL),
+        ('minio', MINIO_INTERNAL),
+    ]
 
-    print(f'Exposing Service {CLIENT_NAME} @ {CLIENT_URL}')
-    register_app(CLIENT_NAME, CLIENT_URL)
-    print(f'Service {CLIENT_NAME} from {CLIENT_URL} now being served by kong @ /{CLIENT_NAME}.')
+    for name, url in services:
+        print(f'Exposing service "{name}" @ {url}')
+        register_app(name, url)
+        print(f'Service "{name}" @ {url} now being served by kong @ {HOST}/{name}')

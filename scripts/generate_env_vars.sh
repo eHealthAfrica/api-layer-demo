@@ -1,3 +1,49 @@
+#!/usr/bin/env bash
+#
+# Copyright (C) 2018 by eHealth Africa : http://www.eHealthAfrica.org
+#
+# See the NOTICE file distributed with this work for additional information
+# regarding copyright ownership.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+# This script can be used to generate an ".env" for local development with
+# docker compose.
+#
+# Example:
+# ./scripts/generate_env_vars.sh
+
+function check_openssl {
+    which openssl > /dev/null
+}
+
+function gen_random_string {
+    openssl rand -hex 16 | tr -d "\n"
+}
+
+function final_warning {
+    source .env
+
+    echo "Add to your [/etc/hosts] or [C:\Windows\System32\Drivers\etc\hosts] file the following line:"
+    echo ""
+    echo "127.0.0.1  ${BASE_DOMAIN}"
+    echo ""
+}
+
+function gen_env_file {
+    cat << EOF
 #
 # USE THIS ONLY LOCALLY
 #
@@ -32,8 +78,8 @@ AETHER_VERSION=1.4.0-rc
 # ==================================================================
 KEYCLOAK_GLOBAL_ADMIN=admin
 KEYCLOAK_GLOBAL_PASSWORD=password
-KEYCLOAK_PG_PASSWORD=6c040e9736d7c709259c7d0f72428c57
-KONG_PG_PASSWORD=04541ce61c8295160530dd2ff6c02ff9
+KEYCLOAK_PG_PASSWORD=$(gen_random_string)
+KONG_PG_PASSWORD=$(gen_random_string)
 
 KEYCLOAK_INITIAL_USER_USERNAME=user
 KEYCLOAK_INITIAL_USER_PASSWORD=password
@@ -64,8 +110,8 @@ KONG_IP=192.168.2.10
 # ------------------------------------------------------------------
 # Minio storage
 # ==================================================================
-MINIO_STORAGE_ACCESS_KEY=b60073830a53aa2af44440771ce6729a
-MINIO_STORAGE_SECRET_KEY=0c0b32de96bf2f2d5c7a52c47bebbd84
+MINIO_STORAGE_ACCESS_KEY=$(gen_random_string)
+MINIO_STORAGE_SECRET_KEY=$(gen_random_string)
 
 MINIO_INTERNAL=http://minio:9000
 # ------------------------------------------------------------------
@@ -76,23 +122,23 @@ MINIO_INTERNAL=http://minio:9000
 # ==================================================================
 KERNEL_ADMIN_USERNAME=admin
 KERNEL_ADMIN_PASSWORD=adminadmin
-KERNEL_ADMIN_TOKEN=4cb5e550f23a38ca088170b4d194ecc4
-KERNEL_DJANGO_SECRET_KEY=c337598e8452c13b18f4a29ba6675e85
-KERNEL_DB_PASSWORD=0c8d0cefe7df34d445b2ea8ad0b7ae35
+KERNEL_ADMIN_TOKEN=$(gen_random_string)
+KERNEL_DJANGO_SECRET_KEY=$(gen_random_string)
+KERNEL_DB_PASSWORD=$(gen_random_string)
 
 KERNEL_READONLY_DB_USERNAME=readonlyuser
-KERNEL_READONLY_DB_PASSWORD=752576499a6bb383ae8be42be5dadc93
+KERNEL_READONLY_DB_PASSWORD=$(gen_random_string)
 
 # TEST Aether Kernel
 # ------------------------------------------------------------------
 TEST_KERNEL_ADMIN_USERNAME=admin-test
 TEST_KERNEL_ADMIN_PASSWORD=testingtesting
-TEST_KERNEL_ADMIN_TOKEN=f57c6be1f1b41f25f80c5f70b4202c13
-TEST_KERNEL_DJANGO_SECRET_KEY=dafe22d1b9b421294820090c09d468c3
-TEST_KERNEL_DB_PASSWORD=7a23b9afaea592b0ccd805f63bcad0fa
+TEST_KERNEL_ADMIN_TOKEN=$(gen_random_string)
+TEST_KERNEL_DJANGO_SECRET_KEY=$(gen_random_string)
+TEST_KERNEL_DB_PASSWORD=$(gen_random_string)
 
 TEST_KERNEL_READONLY_DB_USERNAME=readonlytest
-TEST_KERNEL_READONLY_DB_PASSWORD=943545c18e021693e50d9eacd12ec74b
+TEST_KERNEL_READONLY_DB_PASSWORD=$(gen_random_string)
 # ------------------------------------------------------------------
 
 
@@ -109,17 +155,17 @@ PRODUCER_ADMIN_PW=adminadmin
 # ==================================================================
 ODK_ADMIN_USERNAME=admin
 ODK_ADMIN_PASSWORD=adminadmin
-ODK_ADMIN_TOKEN=2f1a707ed72fbeb1df9dff2cc7d00e3d
-ODK_DJANGO_SECRET_KEY=61b9124d0c5d5d3526fff98c95f7c94a
-ODK_DB_PASSWORD=1078a9c83b28d8265e7ed44c5b3ff361
+ODK_ADMIN_TOKEN=$(gen_random_string)
+ODK_DJANGO_SECRET_KEY=$(gen_random_string)
+ODK_DB_PASSWORD=$(gen_random_string)
 
 # TEST Aether ODK Module
 # ------------------------------------------------------------------
 TEST_ODK_ADMIN_USERNAME=admin-test
 TEST_ODK_ADMIN_PASSWORD=testingtesting
-TEST_ODK_ADMIN_TOKEN=b073baa673494f1495866c4d74e5bc5b
-TEST_ODK_DJANGO_SECRET_KEY=3a2b2646876c7bb6cb6b7ded2a8f47ae
-TEST_ODK_DB_PASSWORD=660ae1f5b07aef4298eebed65010475b
+TEST_ODK_ADMIN_TOKEN=$(gen_random_string)
+TEST_ODK_DJANGO_SECRET_KEY=$(gen_random_string)
+TEST_ODK_DB_PASSWORD=$(gen_random_string)
 # ------------------------------------------------------------------
 
 
@@ -128,6 +174,26 @@ TEST_ODK_DB_PASSWORD=660ae1f5b07aef4298eebed65010475b
 # ==================================================================
 UI_ADMIN_USERNAME=admin
 UI_ADMIN_PASSWORD=adminadmin
-UI_DJANGO_SECRET_KEY=dddf51519a2246c449a1fb44b6c14bf1
-UI_DB_PASSWORD=8713a3eefdcfc6d5f7ba2ac3bb05d540
+UI_DJANGO_SECRET_KEY=$(gen_random_string)
+UI_DB_PASSWORD=$(gen_random_string)
 # ------------------------------------------------------------------
+EOF
+}
+
+if [ -e ".env" ]; then
+    echo "[.env] file already exists! Remove it if you want to generate a new one."
+    final_warning
+    exit 0
+fi
+
+check_openssl
+RET=$?
+if [ $RET -eq 1 ]; then
+    echo "Please install 'openssl'"
+    exit 1
+fi
+
+set -Eeo pipefail
+gen_env_file > .env
+echo "[.env] file generated!"
+final_warning

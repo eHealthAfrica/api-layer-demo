@@ -65,7 +65,7 @@ services:
     command: ["kong", "start"]
 
   keycloak:
-    build: ./aether-auth/keycloak
+    build: ./api-auth/keycloak
     environment:
       DB_VENDOR: POSTGRES
       DB_ADDR: db
@@ -86,33 +86,28 @@ services:
     networks:
       - internal
 
+  # ---------------------------------
+  # Auth builder Container
+  # ---------------------------------
+
   auth:
     image: aether-auth
-    build: ./aether-auth
+    build: ./api-auth/aether-auth
     environment:
+      DEBUG: null
+
       KEYCLOAK_GLOBAL_ADMIN: ${KEYCLOAK_GLOBAL_ADMIN}
       KEYCLOAK_GLOBAL_PASSWORD: ${KEYCLOAK_GLOBAL_PASSWORD}
+      KEYCLOAK_KONG_CLIENT: ${KEYCLOAK_KONG_CLIENT}
 
-      JWT_COOKIE: ${JWT_COOKIE}
-      REALM_COOKIE: ${REALM_COOKIE}
-
-      APP_NAME: auth
-      APP_PORT: 3012
-
-      APP_INTERNAL: http://auth:3012
+      BASE_DOMAIN: ${BASE_DOMAIN}
       BASE_HOST: ${BASE_HOST}
       KEYCLOAK_INTERNAL: ${KEYCLOAK_INTERNAL}
       KONG_INTERNAL: ${KONG_INTERNAL}
+      MINIO_INTERNAL: ${MINIO_INTERNAL}
     volumes:
-      - ./aether-auth:/code
-    depends_on:
-      kong:
-        condition: service_started
-      keycloak:
-        condition: service_started
-    ports:
-      - 3012:3012
-    command: ['cat', '/dev/null']  # nothing to do here on "start"
+      - ./api-auth/aether-auth:/code
+    command: help
     networks:
       - internal
 

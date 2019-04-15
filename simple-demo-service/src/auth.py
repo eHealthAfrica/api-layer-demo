@@ -18,8 +18,9 @@ def get_realm(f):
         request = flask.request
         res = decode_jwt(request.headers.get('X-Oauth-Token'))
         try:
-            azp = res['azp']
-            realm = azp.split('-oidc')[0]
+            iss = res['iss']
+            realm = iss.split('/')[-1]
+            app.logger.debug(realm)
         except KeyError:
             realm = None
         kwargs['realm'] = realm

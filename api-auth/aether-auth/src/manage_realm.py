@@ -67,18 +67,6 @@ def client_for_realm(realm):
 
 
 def create_realm(realm):
-    # # Usage:    create_kc_realm <realm-name>
-    # function create_kc_realm {
-    #     REALM=$1
-
-    #     echo "${LINE} Creating realm [${REALM}]..."
-    #     $KCADM \
-    #         create realms \
-    #         -s realm="${REALM}" \
-    #         -s displayName="${REALM} realm for the Aether Platform" \
-    #         -s enabled=true
-    # }
-
     # There is no method for realm creation in KeycloakAdmin!
     print(f'\nAdding realm "{realm}" to keycloak')
     keycloak_admin = client()
@@ -109,26 +97,6 @@ def create_client(realm, config):
 
 
 def create_oidc_client(realm):
-    # # Usage:    create_kc_kong_client <realm-name>
-    # function create_kc_kong_client {
-    #     REALM=$1
-
-    #     echo "${LINE} Creating client [${KEYCLOAK_KONG_CLIENT}] in realm [$REALM]..."
-    #     CLIENT_URL="${BASE_HOST}/${REALM}/"
-
-    #     $KCADM \
-    #         create clients \
-    #         -r "${REALM}" \
-    #         -s clientId="${KEYCLOAK_KONG_CLIENT}" \
-    #         -s publicClient=false \
-    #         -s clientAuthenticatorType=client-secret \
-    #         -s directAccessGrantsEnabled=true \
-    #         -s rootUrl="${CLIENT_URL}" \
-    #         -s baseUrl="${CLIENT_URL}" \
-    #         -s 'redirectUris=["*"]' \
-    #         -s enabled=true
-    # }
-
     client_url = f'{HOST}/{realm}/'
     config = {
         'clientId': KEYCLOAK_KONG_CLIENT,
@@ -154,27 +122,6 @@ def create_user(
     email=None,
     temporary_password=False
 ):
-    # # Usage:    create_kc_user <realm-name> <username> [<password>]
-    # function create_kc_user {
-    #     REALM=$1
-    #     USERNAME=$2
-    #     PASSWORD=${3:-}
-
-    #     echo "${LINE} Creating user [$USERNAME] in realm [$REALM]..."
-    #     $KCADM \
-    #         create users \
-    #         -r "${REALM}" \
-    #         -s username="${USERNAME}" \
-    #         -s enabled=true
-
-    #     if [ ! -z "${PASSWORD}" ]; then
-    #         $KCADM \
-    #             set-password \
-    #             -r "${REALM}" \
-    #             --username "${USERNAME}" \
-    #             --new-password="${PASSWORD}"
-    #     fi
-    # }
     print(f'\nAdding user "{user}" to {realm}')
     # clean command line inputs
     if not isinstance(admin, bool):

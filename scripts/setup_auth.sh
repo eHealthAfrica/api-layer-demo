@@ -99,12 +99,6 @@ for REALM in "${REALMS[@]}"; do
     $AUTH_CMD add_user          $REALM \
                                 $KEYCLOAK_INITIAL_USER_USERNAME \
                                 $KEYCLOAK_INITIAL_USER_PASSWORD            
-    # create_kc_realm          $REALM
-    # create_kc_kong_client    $REALM
-
-    # create_kc_user  $REALM \
-    #                 $KEYCLOAK_INITIAL_USER_USERNAME \
-    #                 $KEYCLOAK_INITIAL_USER_PASSWORD
 
     echo "${LINE} Adding [demo] solution in kong..."
     $AUTH_CMD add_solution demo $REALM

@@ -20,6 +20,8 @@
 #
 set -Eeuo pipefail
 
+scripts/generate_env_vars.sh
+source ./scripts/setup_functions.sh
 source ./scripts/aether_functions.sh
 
 echo ""
@@ -34,18 +36,31 @@ source .env
 
 
 DC_AUTH="docker-compose -f docker-compose.yml"
+AUTH_CMD="$DC_AUTH run --rm auth"
+
+function connect_to_keycloak {
+    n=0
+    until [ $n -ge 10 ]
+    do
+        $AUTH_CMD keycloak_ready && break
+        echo "waiting for keycloak..."        
+        sleep 3
+    done
+}
+
 LINE="__________________________________________________________________"
 
 echo "${LINE} Pulling docker images..."
-docker-compose pull db
+docker-compose pull db auth
 echo ""
 
-docker-compose up -d db
+start_db
 
 # Initialize the kong & keycloak databases in the postgres instance
 
 # THESE COMMANDS WILL ERASE PREVIOUS DATA!!!
 rebuild_database kong     kong     ${KONG_PG_PASSWORD}
+start_db
 rebuild_database keycloak keycloak ${KEYCLOAK_PG_PASSWORD}
 echo ""
 
@@ -71,7 +86,7 @@ start_kong
 
 
 echo "${LINE} Registering keycloak and minio in kong..."
-$DC_AUTH run auth setup_auth
+$AUTH_CMD setup_auth
 echo ""
 
 
@@ -82,15 +97,14 @@ connect_to_keycloak
 echo "${LINE} Creating initial realms in keycloak..."
 REALMS=( dev prod )
 for REALM in "${REALMS[@]}"; do
-    create_kc_realm          $REALM
-    create_kc_kong_client    $REALM
-
-    create_kc_user  $REALM \
-                    $KEYCLOAK_INITIAL_USER_USERNAME \
-                    $KEYCLOAK_INITIAL_USER_PASSWORD
+    $AUTH_CMD add_realm         $REALM
+    $AUTH_CMD add_oidc_client   $REALM
+    $AUTH_CMD add_user          $REALM \
+                                $KEYCLOAK_INITIAL_USER_USERNAME \
+                                $KEYCLOAK_INITIAL_USER_PASSWORD            
 
     echo "${LINE} Adding [demo] solution in kong..."
-    $DC_AUTH run auth add_solution demo $REALM
+    $AUTH_CMD add_solution demo $REALM
 done
 echo ""
 

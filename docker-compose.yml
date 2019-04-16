@@ -1,17 +1,15 @@
 version: '2.1'
 
 networks:
-  # docker network create api_demo_internal
   internal:
     external:
       # if this isn't explicitly set it inherits from the containing folder name (aether or not)
-      name: api_demo_internal
+      name: ${PLATFORM_NAME}-internal
 
 volumes:
-  # docker volume create api_demo_database_data
   database_data:
     external:
-      name: api_demo_database_data
+      name: ${PLATFORM_NAME}-database_data
 
 services:
 
@@ -93,22 +91,20 @@ services:
   # ---------------------------------
 
   auth:
-    image: aether-auth
-    build: ./api-auth/aether-auth
+    image: ehealthafrica/gateway-manager:latest
     environment:
-      DEBUG: null
-
       KEYCLOAK_GLOBAL_ADMIN: ${KEYCLOAK_GLOBAL_ADMIN}
       KEYCLOAK_GLOBAL_PASSWORD: ${KEYCLOAK_GLOBAL_PASSWORD}
       KEYCLOAK_KONG_CLIENT: ${KEYCLOAK_KONG_CLIENT}
-
       BASE_DOMAIN: ${BASE_DOMAIN}
       BASE_HOST: ${BASE_HOST}
+      PLATFORM_NAME: ${PLATFORM_NAME}
       KEYCLOAK_INTERNAL: ${KEYCLOAK_INTERNAL}
       KONG_INTERNAL: ${KONG_INTERNAL}
-      MINIO_INTERNAL: ${MINIO_INTERNAL}
+      MINIO_INTERNAL: ${MINIO_INTERNAL-http://minio.local}
     volumes:
-      - ./api-auth/aether-auth:/code
+      - ./api-auth/service:/code/service
+      - ./api-auth/solution:/code/solution
     command: help
     networks:
       - internal
@@ -117,9 +113,6 @@ services:
     image: demo-service
     build: ./simple-demo-service
     environment:
-      
-      JWT_COOKIE: ${JWT_COOKIE}
-      REALM_COOKIE: ${REALM_COOKIE}
 
       APP_NAME: demo-service
       APP_PORT: 3013

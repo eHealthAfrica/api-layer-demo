@@ -51,7 +51,7 @@ function connect_to_keycloak {
 LINE="__________________________________________________________________"
 
 echo "${LINE} Pulling docker images..."
-docker-compose pull db
+docker-compose pull db auth
 echo ""
 
 start_db

@@ -20,6 +20,8 @@
 #
 set -Eeuo pipefail
 
+scripts/generate_env_vars.sh
+source ./scripts/setup_functions.sh
 source ./scripts/aether_functions.sh
 
 echo ""
@@ -52,12 +54,13 @@ echo "${LINE} Pulling docker images..."
 docker-compose pull db
 echo ""
 
-docker-compose up -d db
+start_db
 
 # Initialize the kong & keycloak databases in the postgres instance
 
 # THESE COMMANDS WILL ERASE PREVIOUS DATA!!!
 rebuild_database kong     kong     ${KONG_PG_PASSWORD}
+start_db
 rebuild_database keycloak keycloak ${KEYCLOAK_PG_PASSWORD}
 echo ""
 

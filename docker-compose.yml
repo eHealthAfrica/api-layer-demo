@@ -1,17 +1,15 @@
 version: '2.1'
 
 networks:
-  # docker network create api_demo_internal
   internal:
     external:
       # if this isn't explicitly set it inherits from the containing folder name (aether or not)
-      name: api_demo_internal
+      name: ${PLATFORM_NAME}-internal
 
 volumes:
-  # docker volume create api_demo_database_data
   database_data:
     external:
-      name: api_demo_database_data
+      name: ${PLATFORM_NAME}-database_data
 
 services:
 
@@ -106,7 +104,7 @@ services:
       PLATFORM_NAME: ${PLATFORM_NAME}
       KEYCLOAK_INTERNAL: ${KEYCLOAK_INTERNAL}
       KONG_INTERNAL: ${KONG_INTERNAL}
-      MINIO_INTERNAL: ${MINIO_INTERNAL}
+      MINIO_INTERNAL: ${MINIO_INTERNAL-http://minio.local}
     volumes:
       - ./api-auth/aether-auth:/code
     command: help

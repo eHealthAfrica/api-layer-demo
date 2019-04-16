@@ -101,9 +101,9 @@ services:
       KEYCLOAK_GLOBAL_ADMIN: ${KEYCLOAK_GLOBAL_ADMIN}
       KEYCLOAK_GLOBAL_PASSWORD: ${KEYCLOAK_GLOBAL_PASSWORD}
       KEYCLOAK_KONG_CLIENT: ${KEYCLOAK_KONG_CLIENT}
-
       BASE_DOMAIN: ${BASE_DOMAIN}
       BASE_HOST: ${BASE_HOST}
+      PLATFORM_NAME: ${PLATFORM_NAME}
       KEYCLOAK_INTERNAL: ${KEYCLOAK_INTERNAL}
       KONG_INTERNAL: ${KONG_INTERNAL}
       MINIO_INTERNAL: ${MINIO_INTERNAL}
@@ -117,9 +117,6 @@ services:
     image: demo-service
     build: ./simple-demo-service
     environment:
-      
-      JWT_COOKIE: ${JWT_COOKIE}
-      REALM_COOKIE: ${REALM_COOKIE}
 
       APP_NAME: demo-service
       APP_PORT: 3013

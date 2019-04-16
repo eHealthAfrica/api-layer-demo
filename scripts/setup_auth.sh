@@ -34,6 +34,18 @@ source .env
 
 
 DC_AUTH="docker-compose -f docker-compose.yml"
+AUTH_CMD="$DC_AUTH run --rm auth"
+
+function connect_to_keycloak {
+    n=0
+    until [ $n -ge 10 ]
+    do
+        $AUTH_CMD keycloak_ready && break
+        echo "waiting for keycloak..."        
+        sleep 3
+    done
+}
+
 LINE="__________________________________________________________________"
 
 echo "${LINE} Pulling docker images..."
@@ -71,7 +83,7 @@ start_kong
 
 
 echo "${LINE} Registering keycloak and minio in kong..."
-$DC_AUTH run auth setup_auth
+$AUTH_CMD setup_auth
 echo ""
 
 
@@ -82,15 +94,20 @@ connect_to_keycloak
 echo "${LINE} Creating initial realms in keycloak..."
 REALMS=( dev prod )
 for REALM in "${REALMS[@]}"; do
-    create_kc_realm          $REALM
-    create_kc_kong_client    $REALM
+    $AUTH_CMD add_realm         $REALM
+    $AUTH_CMD add_oidc_client   $REALM
+    $AUTH_CMD add_user          $REALM \
+                                $KEYCLOAK_INITIAL_USER_USERNAME \
+                                $KEYCLOAK_INITIAL_USER_PASSWORD            
+    # create_kc_realm          $REALM
+    # create_kc_kong_client    $REALM
 
-    create_kc_user  $REALM \
-                    $KEYCLOAK_INITIAL_USER_USERNAME \
-                    $KEYCLOAK_INITIAL_USER_PASSWORD
+    # create_kc_user  $REALM \
+    #                 $KEYCLOAK_INITIAL_USER_USERNAME \
+    #                 $KEYCLOAK_INITIAL_USER_PASSWORD
 
     echo "${LINE} Adding [demo] solution in kong..."
-    $DC_AUTH run auth add_solution demo $REALM
+    $AUTH_CMD add_solution demo $REALM
 done
 echo ""
 

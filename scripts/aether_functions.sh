@@ -114,38 +114,38 @@ EOSQL
 # https://www.keycloak.org/docs/latest/server_admin/index.html#using-the-admin-cli
 # ------------------------------------------------------------------------------
 
-function connect_to_keycloak {
-    n=0
-    until [ $n -ge 10 ]
-    do
-        KC_ID=$(docker-compose ps -q keycloak)
-        export KCADM="docker container exec -i ${KC_ID} ./keycloak/bin/kcadm.sh"
+# function connect_to_keycloak {
+#     n=0
+#     until [ $n -ge 10 ]
+#     do
+#         KC_ID=$(docker-compose ps -q keycloak)
+#         export KCADM="docker container exec -i ${KC_ID} ./keycloak/bin/kcadm.sh"
 
-        echo "${LINE} Connecting to keycloak server..."
-        $KCADM \
-            config credentials \
-            --server ${KC_URL} \
-            --realm master \
-            --user "${KEYCLOAK_GLOBAL_ADMIN}" \
-            --password "${KEYCLOAK_GLOBAL_PASSWORD}" \
-        && break
-        echo "waiting for keycloak"        
-        sleep 3
-    done
-}
+#         echo "${LINE} Connecting to keycloak server..."
+#         $KCADM \
+#             config credentials \
+#             --server ${KC_URL} \
+#             --realm master \
+#             --user "${KEYCLOAK_GLOBAL_ADMIN}" \
+#             --password "${KEYCLOAK_GLOBAL_PASSWORD}" \
+#         && break
+#         echo "waiting for keycloak"        
+#         sleep 3
+#     done
+# }
 
 
-# Usage:    create_kc_realm <realm-name>
-function create_kc_realm {
-    REALM=$1
+# # Usage:    create_kc_realm <realm-name>
+# function create_kc_realm {
+#     REALM=$1
 
-    echo "${LINE} Creating realm [${REALM}]..."
-    $KCADM \
-        create realms \
-        -s realm="${REALM}" \
-        -s displayName="${REALM} realm for the Aether Platform" \
-        -s enabled=true
-}
+#     echo "${LINE} Creating realm [${REALM}]..."
+#     $KCADM \
+#         create realms \
+#         -s realm="${REALM}" \
+#         -s displayName="${REALM} realm for the Aether Platform" \
+#         -s enabled=true
+# }
 
 
 # Usage:    create_kc_aether_clients <realm-name>
@@ -171,45 +171,45 @@ function create_kc_aether_clients {
     done
 }
 
-# Usage:    create_kc_kong_client <realm-name>
-function create_kc_kong_client {
-    REALM=$1
+# # Usage:    create_kc_kong_client <realm-name>
+# function create_kc_kong_client {
+#     REALM=$1
 
-    echo "${LINE} Creating client [${KEYCLOAK_KONG_CLIENT}] in realm [$REALM]..."
-    CLIENT_URL="${BASE_HOST}/${REALM}/"
+#     echo "${LINE} Creating client [${KEYCLOAK_KONG_CLIENT}] in realm [$REALM]..."
+#     CLIENT_URL="${BASE_HOST}/${REALM}/"
 
-    $KCADM \
-        create clients \
-        -r "${REALM}" \
-        -s clientId="${KEYCLOAK_KONG_CLIENT}" \
-        -s publicClient=false \
-        -s clientAuthenticatorType=client-secret \
-        -s directAccessGrantsEnabled=true \
-        -s rootUrl="${CLIENT_URL}" \
-        -s baseUrl="${CLIENT_URL}" \
-        -s 'redirectUris=["*"]' \
-        -s enabled=true
-}
+#     $KCADM \
+#         create clients \
+#         -r "${REALM}" \
+#         -s clientId="${KEYCLOAK_KONG_CLIENT}" \
+#         -s publicClient=false \
+#         -s clientAuthenticatorType=client-secret \
+#         -s directAccessGrantsEnabled=true \
+#         -s rootUrl="${CLIENT_URL}" \
+#         -s baseUrl="${CLIENT_URL}" \
+#         -s 'redirectUris=["*"]' \
+#         -s enabled=true
+# }
 
 
-# Usage:    create_kc_user <realm-name> <username> [<password>]
-function create_kc_user {
-    REALM=$1
-    USERNAME=$2
-    PASSWORD=${3:-}
+# # Usage:    create_kc_user <realm-name> <username> [<password>]
+# function create_kc_user {
+#     REALM=$1
+#     USERNAME=$2
+#     PASSWORD=${3:-}
 
-    echo "${LINE} Creating user [$USERNAME] in realm [$REALM]..."
-    $KCADM \
-        create users \
-        -r "${REALM}" \
-        -s username="${USERNAME}" \
-        -s enabled=true
+#     echo "${LINE} Creating user [$USERNAME] in realm [$REALM]..."
+#     $KCADM \
+#         create users \
+#         -r "${REALM}" \
+#         -s username="${USERNAME}" \
+#         -s enabled=true
 
-    if [ ! -z "${PASSWORD}" ]; then
-        $KCADM \
-            set-password \
-            -r "${REALM}" \
-            --username "${USERNAME}" \
-            --new-password="${PASSWORD}"
-    fi
-}
+#     if [ ! -z "${PASSWORD}" ]; then
+#         $KCADM \
+#             set-password \
+#             -r "${REALM}" \
+#             --username "${USERNAME}" \
+#             --new-password="${PASSWORD}"
+#     fi
+# }

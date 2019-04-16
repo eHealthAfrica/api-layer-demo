@@ -19,14 +19,19 @@
 import os
 
 
-def get_env(name):
-    return os.environ.get(name)
+def get_env(name, default=None):
+    return os.environ.get(name, default)
 
 
 DEBUG = bool(get_env('DEBUG'))
 
 HOST = get_env('BASE_HOST')  # External URL for host
 DOMAIN = get_env('BASE_DOMAIN')
+PLATFORM_NAME = get_env('PLATFORM_NAME')
+REALM_TEMPLATE_PATH = get_env(
+    'REALM_TEMPLATE_PATH',
+    '/code/realm/realm_template.json'
+)
 
 # Keycloak Information
 KEYCLOAK_INTERNAL = get_env('KEYCLOAK_INTERNAL')
